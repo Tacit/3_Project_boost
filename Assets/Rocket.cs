@@ -9,7 +9,9 @@ public class Rocket : MonoBehaviour {
 	[SerializeField] float thrust = 100f;
     [SerializeField] int currentLevel = 0;
     [SerializeField] int levelsCount = 3;
-
+    [SerializeField] AudioClip mainThrust;
+    [SerializeField] AudioClip death;
+    [SerializeField] AudioClip win;
 	Rigidbody rigidBody;
 	AudioSource audioSource;
 
@@ -35,21 +37,35 @@ public class Rocket : MonoBehaviour {
         {
             return;
         }
-        
+
         switch(other.gameObject.tag)
         {
             case "Friendly":
-                print("ok");
+                //Do nothing
                 break;
             case "Finish":
-                state = State.Transcending;
-                Invoke("LoadNextLevel",1f);
+                StartWinSequence();
                 break;
             default:
-                state = State.Dying;
-                Invoke("LoadFirstLevel",1f);
+                StartDieSequence();
                 break;
         }
+    }
+
+    private void StartDieSequence()
+    {
+        audioSource.Stop();
+        state = State.Dying;
+        audioSource.PlayOneShot(death);
+        Invoke("LoadFirstLevel", 1f);
+    }
+
+    private void StartWinSequence()
+    {
+        audioSource.Stop();
+        state = State.Transcending;
+        audioSource.PlayOneShot(win);
+        Invoke("LoadNextLevel", 1f);
     }
 
     private void LoadNextLevel()
@@ -72,29 +88,29 @@ public class Rocket : MonoBehaviour {
             return;
         }
 
-		Thrust();
-        Rotate();
+		RespondToThrustInput();
+        RespondToRotateInput();
     }
 
-    private void Thrust()
+    private void RespondToThrustInput()
     {
 		var thrustSpeed = Time.deltaTime * thrust;
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            audioSource.Play();
-        }
 
         if (Input.GetKey(KeyCode.Space))
         {
             rigidBody.AddRelativeForce(Vector3.up * thrustSpeed);
+            if(!audioSource.isPlaying)
+            {
+                audioSource.PlayOneShot(mainThrust);
+            }
         }
 
         if (Input.GetKeyUp(KeyCode.Space))
         {
-            audioSource.Stop();
+             audioSource.Stop();
         }
     }
-    private void Rotate()
+    private void RespondToRotateInput()
     {
 		rigidBody.freezeRotation = true;
         

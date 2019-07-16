@@ -16,6 +16,23 @@ public class Rocket : MonoBehaviour {
 		audioSource = GetComponent<AudioSource>();
 	}
 	
+    private void OnCollisionEnter(Collision other) 
+    {
+        switch(other.gameObject.tag)
+        {
+            case "Friendly":
+                print("ok");
+                break;          
+            case "Finish":
+                print("Finish");   
+                break;   
+            default:
+                print("Die");
+                break;
+        }
+    }
+
+
 	// Update is called once per frame
 	void Update ()
     {
@@ -57,5 +74,5 @@ public class Rocket : MonoBehaviour {
         }
 		
 		rigidBody.freezeRotation = false;
-    }
+    }    
 }

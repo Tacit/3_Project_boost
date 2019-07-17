@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class Rocket : MonoBehaviour {
 
+    float loadLevelDelay = 1f;
 	[SerializeField] float rscThrust = 100f;
 	[SerializeField] float thrust = 100f;
     [SerializeField] int currentLevel = 0;
@@ -61,7 +62,7 @@ public class Rocket : MonoBehaviour {
         state = State.Dying;
         audioSource.PlayOneShot(death);
         deathParticles.Play();
-        Invoke("LoadFirstLevel", 1f);
+        Invoke("LoadFirstLevel", loadLevelDelay);
     }
 
     private void StartWinSequence()
@@ -70,7 +71,7 @@ public class Rocket : MonoBehaviour {
         state = State.Transcending;
         audioSource.PlayOneShot(win);
         winParticles.Play();
-        Invoke("LoadNextLevel", 1f);
+        Invoke("LoadNextLevel", loadLevelDelay);
     }
 
     private void LoadNextLevel()

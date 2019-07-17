@@ -8,7 +8,7 @@ public class Rocket : MonoBehaviour {
 	[SerializeField] float rscThrust = 100f;
 	[SerializeField] float thrust = 100f;
     [SerializeField] int currentLevel = 0;
-    [SerializeField] int levelsCount = 3;
+    [SerializeField] int levelsCount = 4;
     [SerializeField] AudioClip mainThrust;
     [SerializeField] AudioClip death;
     [SerializeField] AudioClip win;

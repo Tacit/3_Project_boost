@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,7 +10,6 @@ public class Rocket : MonoBehaviour {
 	[SerializeField] float rscThrust = 100f;
 	[SerializeField] float thrust = 100f;
     [SerializeField] int currentLevel = 0;
-    [SerializeField] int levelsCount = 4;
     [SerializeField] AudioClip mainThrust;
     [SerializeField] AudioClip death;
     [SerializeField] AudioClip win;
@@ -27,9 +27,10 @@ public class Rocket : MonoBehaviour {
     }
 
     State state;
+    private bool disableCollisions;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
 		rigidBody = GetComponent<Rigidbody>();
 		audioSource = GetComponent<AudioSource>();
         state = State.Alive;
@@ -37,7 +38,7 @@ public class Rocket : MonoBehaviour {
 	
     private void OnCollisionEnter(Collision other) 
     {
-        if(state != State.Alive)
+        if(state != State.Alive || disableCollisions)
         {
             return;
         }
@@ -67,8 +68,11 @@ public class Rocket : MonoBehaviour {
 
     private void StartWinSequence()
     {
-        audioSource.Stop();
         state = State.Transcending;
+        audioSource.Stop();
+        transform.rotation = Quaternion.identity;
+        rigidBody.velocity = Vector3.zero;
+        rigidBody.angularVelocity = Vector3.zero;
         audioSource.PlayOneShot(win);
         winParticles.Play();
         Invoke("LoadNextLevel", loadLevelDelay);
@@ -76,8 +80,8 @@ public class Rocket : MonoBehaviour {
 
     private void LoadNextLevel()
     {
-        currentLevel++;
-        currentLevel %= levelsCount;
+        currentLevel = SceneManager.GetActiveScene().buildIndex + 1;
+        currentLevel %= SceneManager.sceneCountInBuildSettings;
         SceneManager.LoadScene(currentLevel);
     }
 
@@ -96,6 +100,25 @@ public class Rocket : MonoBehaviour {
 
 		RespondToThrustInput();
         RespondToRotateInput();
+        ResponseToDebugInput();
+    }
+
+    private void ResponseToDebugInput()
+    {
+        if(!Debug.isDebugBuild)
+        {
+            return;
+        }
+
+        if(Input.GetKeyDown(KeyCode.L))
+        {
+            LoadNextLevel();
+        }
+
+        if(Input.GetKeyDown(KeyCode.C))
+        {
+            disableCollisions = !disableCollisions;
+        }
     }
 
     private void RespondToThrustInput()
@@ -126,19 +149,22 @@ public class Rocket : MonoBehaviour {
 
     private void RespondToRotateInput()
     {
-		rigidBody.freezeRotation = true;
-        
 		var rotateSpeed = Time.deltaTime * rscThrust;
 
 		if (Input.GetKey(KeyCode.A))
         {
-            transform.Rotate(Vector3.forward * rotateSpeed);
+            RotatePlayer(rotateSpeed);
         }
         else if (Input.GetKey(KeyCode.D))
         {
-            transform.Rotate(-Vector3.forward * rotateSpeed);
+            RotatePlayer(-rotateSpeed);
         }
-		
-		rigidBody.freezeRotation = false;
-    }    
+    }
+
+    private void RotatePlayer(float rotateSpeed)
+    {
+        rigidBody.freezeRotation = true;
+        transform.Rotate(Vector3.forward * rotateSpeed);
+        rigidBody.freezeRotation = false;
+    }
 }
